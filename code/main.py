@@ -72,15 +72,15 @@ def eval_iemocap(split, output_all, label_all):
     test_truth = truths.reshape((-1, 4))
     emos_f1 = {}
     emos_acc = {}
-    for emo_ind, em in enumerate(gc.best.emos):
+    for emo_ind, em in enumerate(gc.best.iemocap_emos):
         test_preds_i = np.argmax(test_preds[:, emo_ind], axis=1)
         test_truth_i = test_truth[:, emo_ind]
         f1 = f1_score(test_truth_i, test_preds_i, average='weighted')
         emos_f1[em] = f1
         acc = accuracy_score(test_truth_i, test_preds_i)
         emos_acc[em] = acc
-        print("\t%s %s F1 Score: %f" % (split, gc.best.emos[emo_ind], f1))
-        print("\t%s %s Accuracy: %f" % (split, gc.best.emos[emo_ind], acc))
+        print("\t%s %s F1 Score: %f" % (split, gc.best.iemocap_emos[emo_ind], f1))
+        print("\t%s %s Accuracy: %f" % (split, gc.best.iemocap_emos[emo_ind], acc))
     return emos_f1, emos_acc
 
 
@@ -103,9 +103,9 @@ def logSummary():
     print("best epoch: %d" % gc.best.best_epoch)
     if gc.dataset == "iemocap":
         for split in ["test", "valid", "test_at_valid_max"]:
-            for em in gc.best.emos:
-                print("highest %s %s F1: %f" % (split, em, gc.best.max_f1[split][em]))
-                print("highest %s %s accuracy: %f" % (split, em, gc.best.max_acc[split][em]))
+            for em in gc.best.iemocap_emos:
+                print("highest %s %s F1: %f" % (split, em, gc.best.max_iemocap_f1[split][em]))
+                print("highest %s %s accuracy: %f" % (split, em, gc.best.max_iemocap_acc[split][em]))
     elif gc.dataset == 'pom':
         for split in gc.best.split:
             for cls in gc.best.pom_cls:
@@ -315,18 +315,18 @@ def train_model(config_file_name, model_name):
                 label_all.extend(labels.data.cpu().tolist())
             if gc.dataset == "iemocap":
                 valid_f1, valid_acc = eval_iemocap('valid', output_all, label_all)
-                for em in gc.best.emos:
-                    if valid_f1[em] > gc.best.max_f1['valid'][em]:
-                        gc.best.max_f1['valid'][em] = valid_f1[em]
-                        gc.best.max_f1['test_at_valid_max'][em] = test_f1[em]
-                    if valid_acc[em] > gc.best.max_acc['valid'][em]:
-                        gc.best.max_acc['valid'][em] = valid_acc[em]
-                        gc.best.max_acc['test_at_valid_max'][em] = test_acc[em]
-                    if test_f1[em] > gc.best.max_f1['test'][em]:
-                        gc.best.max_f1['test'][em] = test_f1[em]
+                for em in gc.best.iemocap_emos:
+                    if valid_f1[em] > gc.best.max_iemocap_f1['valid'][em]:
+                        gc.best.max_iemocap_f1['valid'][em] = valid_f1[em]
+                        gc.best.max_iemocap_f1['test_at_valid_max'][em] = test_f1[em]
+                    if valid_acc[em] > gc.best.max_iemocap_acc['valid'][em]:
+                        gc.best.max_iemocap_acc['valid'][em] = valid_acc[em]
+                        gc.best.max_iemocap_acc['test_at_valid_max'][em] = test_acc[em]
+                    if test_f1[em] > gc.best.max_iemocap_f1['test'][em]:
+                        gc.best.max_iemocap_f1['test'][em] = test_f1[em]
                         gc.best.best_epoch = epoch + 1
-                    if test_acc[em] > gc.best.max_acc['test'][em]:
-                        gc.best.max_acc['test'][em] = test_acc[em]
+                    if test_acc[em] > gc.best.max_iemocap_acc['test'][em]:
+                        gc.best.max_iemocap_acc['test'][em] = test_acc[em]
             elif gc.dataset == "pom":
                 valid_mae, valid_metrics = eval_pom('valid', output_all, label_all)
                 for cls in gc.best.pom_cls:
